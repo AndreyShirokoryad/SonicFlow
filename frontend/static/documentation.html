@@ -3,17 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Документация PlaylistAnalyze</title>
+    <title>Документация SonicFlow</title>
     <meta
       name="description"
-      content="Описание функционала PlaylistAnalyze, алгоритма рекомендаций на Spotify MPD и API проекта."
+      content="Актуальная документация SonicFlow: функции сайта, режимы рекомендаций, Item2Vec-модель на Spotify MPD, FAISS-ускорение и API проекта."
     />
     <meta name="robots" content="index,follow" />
     <link rel="canonical" href="%PUBLIC_BASE_URL%/documentation" />
     <link rel="stylesheet" href="/static/styles.css" />
     <style>
       .doc-layout {
-        max-width: 980px;
+        max-width: 1040px;
         margin: 0 auto;
         padding: 32px clamp(16px, 4vw, 40px) 56px;
       }
@@ -27,12 +27,18 @@
       }
 
       .doc-article h1 {
+        max-width: 780px;
         font-size: clamp(32px, 6vw, 54px);
       }
 
       .doc-article h2 {
-        margin-top: 34px;
+        margin-top: 38px;
         font-size: 24px;
+      }
+
+      .doc-article h3 {
+        margin: 24px 0 8px;
+        font-size: 18px;
       }
 
       .doc-article p,
@@ -40,6 +46,11 @@
         color: var(--muted);
         font-size: 16px;
         line-height: 1.75;
+      }
+
+      .doc-lead {
+        max-width: 820px;
+        font-size: 18px;
       }
 
       .doc-article code,
@@ -64,14 +75,91 @@
         gap: 10px;
         margin-top: 24px;
       }
+
+      .doc-note {
+        border-left: 4px solid var(--green);
+        background: #f7fbf8;
+        margin: 22px 0;
+        padding: 14px 18px;
+      }
+
+      .doc-note p {
+        margin: 0;
+      }
+
+      .doc-table-wrap {
+        overflow-x: auto;
+        margin-top: 14px;
+      }
+
+      .doc-table {
+        width: 100%;
+        min-width: 760px;
+        border-collapse: collapse;
+        font-size: 15px;
+      }
+
+      .doc-table th,
+      .doc-table td {
+        border-bottom: 1px solid var(--line);
+        padding: 12px 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .doc-table th {
+        color: var(--text);
+        font-size: 13px;
+        text-transform: uppercase;
+      }
+
+      .doc-table td {
+        color: var(--muted);
+      }
+
+      .doc-table strong {
+        color: var(--text);
+      }
+
+      .doc-kpi {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      .doc-kpi-item {
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
+      }
+
+      .doc-kpi-value {
+        display: block;
+        color: var(--text);
+        font-size: 24px;
+        font-weight: 900;
+      }
+
+      .doc-kpi-label {
+        display: block;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 720px) {
+        .doc-kpi {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="/" aria-label="PlaylistAnalyze">
-        <span class="brand-mark">PA</span>
+      <a class="brand" href="/" aria-label="SonicFlow">
+        <span class="brand-mark">SF</span>
         <span>
-          <span class="brand-title">PlaylistAnalyze</span>
+          <span class="brand-title">SonicFlow</span>
           <span class="brand-subtitle">project documentation</span>
         </span>
       </a>
@@ -84,11 +172,12 @@
 
     <main class="doc-layout">
       <article class="doc-article">
-        <p class="eyebrow">Документация</p>
-        <h1>PlaylistAnalyze</h1>
-        <p>
-          PlaylistAnalyze помогает продолжить пользовательский плейлист: пользователь собирает список seed-треков,
-          а сервис возвращает top-N треков, которые статистически подходят к этому плейлисту.
+        <p class="eyebrow">Документация проекта</p>
+        <h1>SonicFlow: рекомендации треков для продолжения плейлиста</h1>
+        <p class="doc-lead">
+          SonicFlow помогает подобрать треки, которые логично продолжат уже собранный плейлист.
+          Пользователь добавляет треки вручную или загружает файл, сервис сопоставляет их со словарем
+          модели MPD Item2Vec и выдает top-N рекомендаций с объяснимыми компонентами score.
         </p>
 
         <div class="doc-actions">
@@ -97,66 +186,192 @@
           <a class="small-button" href="%GITHUB_URL%" target="_blank" rel="noreferrer">Репозиторий GitHub</a>
         </div>
 
-        <h2>Функциональность сайта</h2>
+        <h2>Что умеет сайт</h2>
         <ul>
-          <li>Поиск треков по названию и артисту в словаре MPD-модели.</li>
-          <li>Добавление, удаление и изменение порядка seed-треков.</li>
-          <li>Импорт плейлиста из TXT или CSV.</li>
-          <li>Получение top-N рекомендаций с компонентами score.</li>
-          <li>Добавление рекомендованных треков обратно в плейлист.</li>
-          <li>Переход к треку в Spotify, если у результата есть Spotify URI.</li>
+          <li>Искать треки по названию или артисту в словаре обученной модели.</li>
+          <li>Показывать больше результатов поиска без перезагрузки страницы.</li>
+          <li>Добавлять найденные треки в верх плейлиста. Верх списка считается самым свежим концом плейлиста.</li>
+          <li>Загружать плейлист из TXT/CSV и быстро сопоставлять строки с треками из MPD.</li>
+          <li>Помечать строки загрузки как найденные, не найденные или распознанные неуверенно.</li>
+          <li>Строить рекомендации только по распознанным трекам, чтобы отсутствующие в базе строки не ломали расчет.</li>
+          <li>Настраивать режим рекомендаций, размер выдачи, recent window и минимальный MPD count для кандидатов.</li>
+          <li>Открывать найденные и рекомендованные треки в Spotify по URI.</li>
         </ul>
 
-        <h2>На чем основан алгоритм</h2>
+        <div class="doc-note">
+          <p>
+            Параметр <code>Min count</code> влияет только на кандидатов в рекомендациях. Он не ограничивает обычный
+            поиск по названию или артисту, поэтому редкие треки все равно можно найти и добавить в плейлист.
+          </p>
+        </div>
+
+        <h2>Как устроен пользовательский сценарий</h2>
+        <ol>
+          <li>Пользователь вводит название трека/артиста или загружает файл с плейлистом.</li>
+          <li>Frontend отправляет строки на <code>POST /recommend/match</code> и получает подробный статус матчинга.</li>
+          <li>В список попадают все строки, но для рекомендаций используются только треки, найденные в словаре модели.</li>
+          <li>Самые свежие треки находятся сверху списка. Именно верхние распознанные треки образуют recent window.</li>
+          <li>Backend считает рекомендации по выбранному режиму и возвращает score, компоненты score и короткое объяснение.</li>
+        </ol>
+
+        <h2>Используемая модель</h2>
         <p>
-          Первая версия использует Spotify Million Playlist Dataset. В обучении Item2Vec один плейлист
-          считается предложением, а один трек считается словом. Если треки часто встречаются в похожих
-          playlist-context, их embedding-векторы становятся близкими.
+          Основная модель обучена на Spotify Million Playlist Dataset. В Item2Vec каждый плейлист рассматривается
+          как последовательность токенов, а каждый трек Spotify URI - как отдельное слово. Если два трека часто
+          встречаются в похожих плейлистах и окружениях, их embedding-векторы становятся близкими.
         </p>
         <p>
-          Модель не анализирует аудио напрямую. Основной сигнал - co-occurrence треков в реальных плейлистах Spotify.
-          Для ускорения выдачи рекомендаций backend строит FAISS index по нормализованным Item2Vec-векторам
-          и через него быстро находит candidate pool ближайших треков.
+          Модель не слушает аудио и не анализирует жанр напрямую. Главный обучающий сигнал - совместная встречаемость
+          треков в реальных плейлистах. Поэтому рекомендации отражают не акустическую похожесть в чистом виде, а то,
+          как люди обычно группируют треки в плейлистах.
         </p>
 
-        <h2>Формула ранжирования</h2>
+        <div class="doc-kpi" aria-label="Параметры полной модели">
+          <div class="doc-kpi-item">
+            <span class="doc-kpi-value">1 188 873</span>
+            <span class="doc-kpi-label">треков в словаре полной локальной модели</span>
+          </div>
+          <div class="doc-kpi-item">
+            <span class="doc-kpi-value">64</span>
+            <span class="doc-kpi-label">размерность embedding-вектора каждого трека</span>
+          </div>
+          <div class="doc-kpi-item">
+            <span class="doc-kpi-value">1 000 000</span>
+            <span class="doc-kpi-label">плейлистов MPD использованы при обучении</span>
+          </div>
+        </div>
+
+        <h3>Параметры обучения</h3>
+        <ul>
+          <li>Backend модели: <code>gensim.Word2Vec</code>.</li>
+          <li>Режим Word2Vec: Skip-gram, <code>sg=1</code>.</li>
+          <li>Окно контекста: <code>window=5</code>.</li>
+          <li>Negative sampling: <code>negative=5</code>.</li>
+          <li>Минимальная частота попадания в словарь модели: <code>min_count=2</code>.</li>
+          <li>Количество эпох обучения: <code>epochs=5</code>.</li>
+          <li>Файлы для backend: <code>item_vectors_normalized.npy</code>, <code>vocab.jsonl</code>, <code>model_meta.json</code>.</li>
+        </ul>
+
+        <h2>Как считается рекомендация</h2>
+        <p>
+          После матчинга backend берет URI распознанных seed-треков, находит их векторы и строит несколько признаков
+          для каждого кандидата. Треки, уже добавленные в плейлист, из выдачи исключаются. Также отсекаются почти
+          дубли seed-треков, например live/remaster/remix-версии с тем же артистом и названием.
+        </p>
         <pre><code>score =
-  0.45 * recent_similarity
-+ 0.25 * whole_playlist_similarity
-+ 0.20 * multi_seed_support
-+ 0.10 * popularity_prior
-+ preset_artist_weight * favorite_artist_affinity</code></pre>
+  recent_weight * recent_similarity
++ whole_weight * whole_playlist_similarity
++ multi_seed_weight * multi_seed_support
++ popularity_weight * popularity_prior
++ favorite_artist_weight * favorite_artist_affinity</code></pre>
         <ul>
-          <li><code>recent_similarity</code> - близость к верхним, самым свежим трекам плейлиста.</li>
-          <li><code>whole_playlist_similarity</code> - близость к среднему вектору всего плейлиста.</li>
-          <li><code>multi_seed_support</code> - поддержка несколькими seed-треками.</li>
-          <li><code>popularity_prior</code> - мягкая поправка на популярность трека в MPD.</li>
-          <li><code>favorite_artist_affinity</code> - бонус трекам артистов, которые часто встречаются в seed-плейлисте.</li>
+          <li><code>recent_similarity</code> - похожесть на верхние <code>Recent K</code> распознанных треков.</li>
+          <li><code>whole_playlist_similarity</code> - похожесть на средний вектор всего распознанного плейлиста.</li>
+          <li><code>multi_seed_support</code> - насколько кандидат поддерживается несколькими seed-треками, а не только одним.</li>
+          <li><code>popularity_prior</code> - нормализованная популярность трека в MPD через <code>log1p(count)</code>.</li>
+          <li><code>favorite_artist_affinity</code> - близость к любимым артистам в текущем seed-плейлисте.</li>
         </ul>
 
-        <h2>Режимы рекомендаций</h2>
-        <ul>
-          <li><code>Balance</code> - сбалансированный режим по верхним свежим трекам, всему плейлисту, поддержке seed-треками и популярности.</li>
-          <li><code>More recent</code> - сильнее продолжает верхние распознанные треки.</li>
-          <li><code>Favorite</code> - сильнее учитывает любимых артистов плейлиста и поднимает их треки даже при небольшом MPD count.</li>
-          <li><code>More popular</code> - сильнее поднимает треки, часто встречающиеся в MPD.</li>
-        </ul>
+        <h2>Режимы работы</h2>
+        <p>
+          Режим меняет только веса компонентов ранжирования. Поиск треков, матчинг загруженного файла и состав словаря
+          модели от режима не зависят.
+        </p>
+        <div class="doc-table-wrap">
+          <table class="doc-table">
+            <thead>
+              <tr>
+                <th>Режим</th>
+                <th>Когда использовать</th>
+                <th>Веса score</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Balance</strong></td>
+                <td>
+                  Режим по умолчанию. Подходит, когда нужно продолжить плейлист без сильного перекоса в свежесть,
+                  популярность или любимых артистов.
+                </td>
+                <td>
+                  Recent 45%, whole playlist 25%, multi-seed 20%, popularity 10%, favorite artist 0%.
+                </td>
+              </tr>
+              <tr>
+                <td><strong>More recent</strong></td>
+                <td>
+                  Лучше подходит, если верхние треки списка задают текущее настроение и именно их нужно продолжить.
+                  Особенно полезен после ручного добавления нескольких новых треков через поиск.
+                </td>
+                <td>
+                  Recent 65%, whole playlist 15%, multi-seed 15%, popularity 5%, favorite artist 0%.
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Favorite</strong></td>
+                <td>
+                  Сильнее учитывает артистов, которые повторяются в плейлисте. Режим поднимает треки этих исполнителей
+                  и похожих по artist-affinity кандидатов, даже если общий MPD count у них небольшой.
+                </td>
+                <td>
+                  Recent 25%, whole playlist 20%, multi-seed 15%, popularity 5%, favorite artist 35%.
+                </td>
+              </tr>
+              <tr>
+                <td><strong>More popular</strong></td>
+                <td>
+                  Делает выдачу более узнаваемой и устойчивой за счет треков, которые часто встречались в MPD.
+                  Подходит, когда нужны менее рискованные рекомендации.
+                </td>
+                <td>
+                  Recent 35%, whole playlist 20%, multi-seed 20%, popularity 25%, favorite artist 0%.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>FAISS-ускорение</h2>
+        <p>
+          Для полной модели перебор всех векторов на каждый запрос был бы тяжелым. Поэтому backend при старте строит
+          FAISS <code>IndexFlatIP</code> по нормализованным векторам. Так как векторы нормализованы, inner product
+          эквивалентен cosine similarity. FAISS быстро находит ближайших кандидатов для recent-вектора и whole-playlist
+          вектора, а итоговое ранжирование уже считается только по этому candidate pool.
+        </p>
+        <p>
+          Если <code>faiss-cpu</code> недоступен или <code>ENABLE_FAISS=0</code>, сервис остается рабочим и переходит
+          на chunked NumPy-перебор. Это медленнее, но сохраняет корректность результата.
+        </p>
+
+        <h2>Поиск и матчинг</h2>
+        <p>
+          Поиск по сайту использует отдельный token/prefix index по нормализованным названиям треков и артистов.
+          Запросы кешируются, поэтому повторный поиск популярных строк работает быстрее. Для загрузки файла используется
+          batch matching: frontend отправляет строки пачками, а backend пытается найти точное совпадение artist/title,
+          затем более мягкие совпадения по названию и артисту.
+        </p>
+        <p>
+          Неуверенно распознанные строки отображаются отдельно, чтобы пользователь мог проверить их вручную.
+          В рекомендации они могут попасть только если backend вернул конкретный <code>track_uri</code>.
+        </p>
 
         <h2>Основные API endpoints</h2>
         <ul>
-          <li><code>GET /health</code> - статус приложения и загруженной модели.</li>
-          <li><code>GET /model</code> - параметры модели и служебная информация.</li>
-          <li><code>GET /tracks/search?q=...</code> - поиск треков.</li>
-          <li><code>POST /tracks/batch</code> - batch lookup треков по Spotify URI.</li>
-          <li><code>POST /recommend/match</code> - подробный матчинг artist/title в MPD.</li>
+          <li><code>GET /health</code> - статус приложения и факт загрузки модели.</li>
+          <li><code>GET /model</code> - метаданные модели, search index, artist index и состояние FAISS.</li>
+          <li><code>GET /tracks/search?q=...</code> - поиск треков по названию или артисту.</li>
+          <li><code>POST /tracks/batch</code> - получение данных по списку Spotify URI.</li>
+          <li><code>POST /recommend/match</code> - подробное сопоставление строк плейлиста с MPD-моделью.</li>
           <li><code>POST /recommend/playlist</code> - рекомендации по текстовому плейлисту.</li>
-          <li><code>POST /recommend/uris</code> - рекомендации по списку Spotify URI.</li>
+          <li><code>POST /recommend/uris</code> - рекомендации по уже известным Spotify URI.</li>
         </ul>
 
-        <h2>Production deployment</h2>
+        <h2>Запуск и публикация</h2>
         <p>
-          Проект подготовлен к запуску через Docker Compose. FastAPI отдает API и frontend,
-          а Caddy проксирует приложение наружу и автоматически выпускает HTTPS-сертификат для публичного домена.
+          Проект подготовлен к локальному запуску через Python/FastAPI и к production-запуску через Docker Compose.
+          FastAPI отдает API, frontend, <code>/documentation</code>, <code>/robots.txt</code> и
+          <code>/sitemap.xml</code>. Caddy используется как внешний reverse proxy и может автоматически выпускать
+          HTTPS-сертификат для публичного домена.
         </p>
       </article>
     </main>

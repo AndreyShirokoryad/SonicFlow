@@ -22,7 +22,7 @@ class Settings:
     public_base_url: str = os.getenv("PUBLIC_BASE_URL", "http://localhost")
     github_url: str = os.getenv(
         "GITHUB_URL",
-        "https://github.com/your-username/PlaylistAnalyze",
+        "https://github.com/AndreyShirokoryad/SonicFlow",
     )
     enable_faiss: bool = os.getenv("ENABLE_FAISS", "1") == "1"
     require_model_on_startup: bool = os.getenv("REQUIRE_MODEL_ON_STARTUP", "0") == "1"

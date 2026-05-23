@@ -22,7 +22,7 @@ fi
 
 MODEL_DIR="${MODEL_DIR:-data/models/item2vec_mpd_gensim}" \
 PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://remote.vdi.mipt.ru:56183}" \
-GITHUB_URL="${GITHUB_URL:-https://github.com/your-username/PlaylistAnalyze}" \
+GITHUB_URL="${GITHUB_URL:-https://github.com/AndreyShirokoryad/SonicFlow}" \
 CORS_ORIGINS="${CORS_ORIGINS:-https://remote.vdi.mipt.ru:56183}" \
 REQUIRE_MODEL_ON_STARTUP="${REQUIRE_MODEL_ON_STARTUP:-1}" \
 nohup .venv/bin/uvicorn backend.app.main:app \
@@ -33,4 +33,4 @@ nohup .venv/bin/uvicorn backend.app.main:app \
   > server.log 2>&1 &
 
 echo "$!" > app.pid
-echo "PlaylistAnalyze started with pid $(cat app.pid)"
+echo "SonicFlow started with pid $(cat app.pid)"
