@@ -1,0 +1,8 @@
+*.npy binary
+*.kv binary
+*.model binary
+*.bz2 binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary

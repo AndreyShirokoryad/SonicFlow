@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local/editor files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+certs/
+
+# Runtime logs and process files
+*.log
+*.pid
+server.log
+app.pid
+
+# Large datasets and trained model artifacts.
+# Keep only the tiny smoke model and data docs in git.
+data/*
+!data/README.md
+!data/models/
+data/models/*
+!data/models/README.md
+!data/models/item2vec_mpd_gensim_smoke/
+!data/models/item2vec_mpd_gensim_smoke/**
+
+# Build/package artifacts
+dist/
+build/
+*.egg-info/
+
+# Node artifacts if frontend tooling is added later
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Документация PlaylistAnalyze</title>
+    <meta
+      name="description"
+      content="Описание функционала PlaylistAnalyze, алгоритма рекомендаций на Spotify MPD и API проекта."
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="%PUBLIC_BASE_URL%/documentation" />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <style>
+      .doc-layout {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 32px clamp(16px, 4vw, 40px) 56px;
+      }
+
+      .doc-article {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+        box-shadow: var(--shadow);
+        padding: clamp(20px, 4vw, 40px);
+      }
+
+      .doc-article h1 {
+        font-size: clamp(32px, 6vw, 54px);
+      }
+
+      .doc-article h2 {
+        margin-top: 34px;
+        font-size: 24px;
+      }
+
+      .doc-article p,
+      .doc-article li {
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.75;
+      }
+
+      .doc-article code,
+      .doc-article pre {
+        border-radius: 8px;
+        background: #f1f5f9;
+        color: #172033;
+      }
+
+      .doc-article code {
+        padding: 2px 5px;
+      }
+
+      .doc-article pre {
+        overflow-x: auto;
+        padding: 16px;
+      }
+
+      .doc-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="PlaylistAnalyze">
+        <span class="brand-mark">PA</span>
+        <span>
+          <span class="brand-title">PlaylistAnalyze</span>
+          <span class="brand-subtitle">project documentation</span>
+        </span>
+      </a>
+      <nav class="topbar-actions" aria-label="Навигация документации">
+        <a class="nav-link" href="/">Приложение</a>
+        <a class="nav-link" href="/docs" target="_blank" rel="noreferrer">API docs</a>
+        <a class="nav-link" href="%GITHUB_URL%" target="_blank" rel="noreferrer">GitHub</a>
+      </nav>
+    </header>
+
+    <main class="doc-layout">
+      <article class="doc-article">
+        <p class="eyebrow">Документация</p>
+        <h1>PlaylistAnalyze</h1>
+        <p>
+          PlaylistAnalyze помогает продолжить пользовательский плейлист: пользователь собирает список seed-треков,
+          а сервис возвращает top-N треков, которые статистически подходят к этому плейлисту.
+        </p>
+
+        <div class="doc-actions">
+          <a class="small-button add" href="/">Открыть приложение</a>
+          <a class="small-button" href="/docs" target="_blank" rel="noreferrer">Swagger API</a>
+          <a class="small-button" href="%GITHUB_URL%" target="_blank" rel="noreferrer">Репозиторий GitHub</a>
+        </div>
+
+        <h2>Функциональность сайта</h2>
+        <ul>
+          <li>Поиск треков по названию и артисту в словаре MPD-модели.</li>
+          <li>Добавление, удаление и изменение порядка seed-треков.</li>
+          <li>Импорт плейлиста из TXT или CSV.</li>
+          <li>Получение top-N рекомендаций с компонентами score.</li>
+          <li>Добавление рекомендованных треков обратно в плейлист.</li>
+          <li>Переход к треку в Spotify, если у результата есть Spotify URI.</li>
+        </ul>
+
+        <h2>На чем основан алгоритм</h2>
+        <p>
+          Первая версия использует Spotify Million Playlist Dataset. В обучении Item2Vec один плейлист
+          считается предложением, а один трек считается словом. Если треки часто встречаются в похожих
+          playlist-context, их embedding-векторы становятся близкими.
+        </p>
+        <p>
+          Модель не анализирует аудио напрямую. Основной сигнал - co-occurrence треков в реальных плейлистах Spotify.
+          Для ускорения выдачи рекомендаций backend строит FAISS index по нормализованным Item2Vec-векторам
+          и через него быстро находит candidate pool ближайших треков.
+        </p>
+
+        <h2>Формула ранжирования</h2>
+        <pre><code>score =
+  0.45 * recent_similarity
++ 0.25 * whole_playlist_similarity
++ 0.20 * multi_seed_support
++ 0.10 * popularity_prior
++ preset_artist_weight * favorite_artist_affinity</code></pre>
+        <ul>
+          <li><code>recent_similarity</code> - близость к верхним, самым свежим трекам плейлиста.</li>
+          <li><code>whole_playlist_similarity</code> - близость к среднему вектору всего плейлиста.</li>
+          <li><code>multi_seed_support</code> - поддержка несколькими seed-треками.</li>
+          <li><code>popularity_prior</code> - мягкая поправка на популярность трека в MPD.</li>
+          <li><code>favorite_artist_affinity</code> - бонус трекам артистов, которые часто встречаются в seed-плейлисте.</li>
+        </ul>
+
+        <h2>Режимы рекомендаций</h2>
+        <ul>
+          <li><code>Balance</code> - сбалансированный режим по верхним свежим трекам, всему плейлисту, поддержке seed-треками и популярности.</li>
+          <li><code>More recent</code> - сильнее продолжает верхние распознанные треки.</li>
+          <li><code>Favorite</code> - сильнее учитывает любимых артистов плейлиста и поднимает их треки даже при небольшом MPD count.</li>
+          <li><code>More popular</code> - сильнее поднимает треки, часто встречающиеся в MPD.</li>
+        </ul>
+
+        <h2>Основные API endpoints</h2>
+        <ul>
+          <li><code>GET /health</code> - статус приложения и загруженной модели.</li>
+          <li><code>GET /model</code> - параметры модели и служебная информация.</li>
+          <li><code>GET /tracks/search?q=...</code> - поиск треков.</li>
+          <li><code>POST /tracks/batch</code> - batch lookup треков по Spotify URI.</li>
+          <li><code>POST /recommend/match</code> - подробный матчинг artist/title в MPD.</li>
+          <li><code>POST /recommend/playlist</code> - рекомендации по текстовому плейлисту.</li>
+          <li><code>POST /recommend/uris</code> - рекомендации по списку Spotify URI.</li>
+        </ul>
+
+        <h2>Production deployment</h2>
+        <p>
+          Проект подготовлен к запуску через Docker Compose. FastAPI отдает API и frontend,
+          а Caddy проксирует приложение наружу и автоматически выпускает HTTPS-сертификат для публичного домена.
+        </p>
+      </article>
+    </main>
+  </body>
+</html>

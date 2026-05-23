@@ -1,0 +1,35 @@
+services:
+  app:
+    build:
+      context: .
+    environment:
+      MODEL_DIR: ${MODEL_DIR:-/models/item2vec_mpd_gensim}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost}
+      GITHUB_URL: ${GITHUB_URL:-https://github.com/your-username/PlaylistAnalyze}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      ENABLE_FAISS: ${ENABLE_FAISS:-1}
+      REQUIRE_MODEL_ON_STARTUP: ${REQUIRE_MODEL_ON_STARTUP:-0}
+    volumes:
+      - ${HOST_MODEL_DIR:-./data/models/item2vec_mpd_gensim}:${MODEL_DIR:-/models/item2vec_mpd_gensim}:ro
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.8-alpine
+    depends_on:
+      - app
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

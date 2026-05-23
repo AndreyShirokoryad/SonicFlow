@@ -1,0 +1,28 @@
+{
+  "backend": "gensim.Word2Vec",
+  "config": {
+    "vector_size": 16,
+    "window": 3,
+    "negative": 2,
+    "min_count": 1,
+    "epochs": 1,
+    "workers": 2,
+    "sample": 0.001,
+    "seed": 42,
+    "sg": 1
+  },
+  "stats": {
+    "vocab_size": 1155,
+    "corpus_count": 20,
+    "corpus_total_words": 1189,
+    "max_files": 1,
+    "max_playlists": 20
+  },
+  "files": {
+    "gensim_model": "gensim_word2vec.model",
+    "gensim_keyed_vectors": "gensim_keyed_vectors.kv",
+    "item_vectors": "item_vectors.npy",
+    "item_vectors_normalized": "item_vectors_normalized.npy",
+    "vocab": "vocab.jsonl"
+  }
+}

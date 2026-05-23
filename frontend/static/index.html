@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PlaylistAnalyze - рекомендации треков по Spotify MPD</title>
+    <meta
+      name="description"
+      content="PlaylistAnalyze подбирает треки для продолжения плейлиста на основе Spotify Million Playlist Dataset и Item2Vec."
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="%PUBLIC_BASE_URL%/" />
+    <meta property="og:title" content="PlaylistAnalyze" />
+    <meta
+      property="og:description"
+      content="Веб-сервис рекомендаций треков на основе real playlist co-occurrence из Spotify MPD."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="%PUBLIC_BASE_URL%/" />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script>
+      window.APP_CONFIG = {
+        githubUrl: "%GITHUB_URL%",
+        publicBaseUrl: "%PUBLIC_BASE_URL%"
+      };
+    </script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="PlaylistAnalyze">
+          <span class="brand-mark">PA</span>
+          <span>
+            <span class="brand-title">PlaylistAnalyze</span>
+            <span class="brand-subtitle">MPD Item2Vec recommendations</span>
+          </span>
+        </a>
+        <nav class="topbar-actions" aria-label="Основная навигация">
+          <a class="nav-link" href="/documentation">Документация</a>
+          <a class="nav-link" id="github-link" href="%GITHUB_URL%" target="_blank" rel="noreferrer">GitHub</a>
+          <a class="nav-link" href="/docs" target="_blank" rel="noreferrer">API</a>
+        </nav>
+      </header>
+
+      <main class="workspace">
+        <section class="panel playlist-panel" aria-labelledby="playlist-title">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Плейлист</p>
+              <h1 id="playlist-title">Собери seed-треки</h1>
+            </div>
+            <span class="status-badge" id="model-status">Проверка API</span>
+          </div>
+
+          <div class="search-row">
+            <label class="field-label" for="track-search">Поиск по названию или артисту</label>
+            <div class="search-control">
+              <input id="track-search" type="search" placeholder="Nirvana Heart-Shaped Box" autocomplete="off" />
+              <button class="icon-button primary" id="search-button" type="button" aria-label="Искать треки">Найти</button>
+            </div>
+          </div>
+
+          <div class="search-results" id="search-results" aria-live="polite"></div>
+
+          <div class="import-box">
+            <div>
+              <label class="field-label" for="playlist-file">Импорт TXT/CSV</label>
+              <input id="playlist-file" type="file" accept=".txt,.csv,text/plain,text/csv" />
+            </div>
+            <button class="ghost-button" id="sample-button" type="button">Добавить пример</button>
+          </div>
+
+          <div class="playlist-header">
+            <h2>Текущий список</h2>
+            <button class="text-button danger" id="clear-playlist" type="button">Очистить</button>
+          </div>
+          <ol class="playlist-list" id="playlist-list"></ol>
+        </section>
+
+        <section class="panel recommendations-panel" aria-labelledby="recommendations-title">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Top-N</p>
+              <h2 id="recommendations-title">Рекомендации</h2>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            <label>
+              Режим
+              <select id="preset-select">
+                <option value="balance">Balance</option>
+                <option value="more_recent">More recent</option>
+                <option value="favorite">Favorite</option>
+                <option value="more_popular">More popular</option>
+              </select>
+            </label>
+            <label>
+              Top-N
+              <input id="top-n" type="number" min="1" max="50" value="20" />
+            </label>
+            <label>
+              Recent K
+              <input id="recent-k" type="number" min="1" max="50" value="5" />
+            </label>
+            <label>
+              Min count
+              <input id="min-count" type="number" min="1" value="10" />
+            </label>
+          </div>
+
+          <button class="primary-action" id="recommend-button" type="button">Получить рекомендации</button>
+
+          <div class="match-summary" id="match-summary" aria-live="polite"></div>
+          <div class="message" id="message" role="status" aria-live="polite"></div>
+
+          <div class="recommendation-list" id="recommendation-list"></div>
+        </section>
+      </main>
+    </div>
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>
